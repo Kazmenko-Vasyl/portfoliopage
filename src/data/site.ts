@@ -1,9 +1,5 @@
 export const NAME = "Vasyl Kazmenko";
 export const ROLE = "software developer @ fiserv";
-/** Typed out beside the rotated name once the hero comes into focus. */
-export const HERO_STATEMENT =
-  "Payments software at Fiserv by day. Websites for businesses by night. Designed properly, quick on a phone, and easy for you to keep up to date.";
-
 export const TAGLINE = "I design and build websites that look sharp and work hard.";
 
 /** Decorative backdrop behind the hero, sitting under the code-rain reveal. */
@@ -120,10 +116,7 @@ export const PHONE = "267-902-9839";
 /** tel: links need the digits only, with country code. */
 export const PHONE_HREF = "tel:+12679029839";
 
-// TODO: replace email + social links with real ones.
 export const CONTACT = {
-  email: "you@example.com",
-  github: "#contact",
-  linkedin: "#contact",
-  twitter: "#contact",
+  email: "kazmenkovasya@gmail.com",
+  github: "https://github.com/Kazmenko-Vasyl",
 };

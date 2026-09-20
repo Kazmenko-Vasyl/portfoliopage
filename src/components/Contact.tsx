@@ -16,14 +16,8 @@ export function Contact() {
         <a href={`mailto:${CONTACT.email}`} className="contact__link contact__link--primary">
           {CONTACT.email}
         </a>
-        <a href={CONTACT.github} className="contact__link">
+        <a href={CONTACT.github} className="contact__link" target="_blank" rel="noreferrer">
           github
-        </a>
-        <a href={CONTACT.linkedin} className="contact__link">
-          linkedin
-        </a>
-        <a href={CONTACT.twitter} className="contact__link">
-          x / twitter
         </a>
       </div>
 
