@@ -1,131 +1,86 @@
 import { useEffect, useRef } from "react";
-import { NAME, TAGLINE } from "../data/site";
+import { TAGLINE } from "../data/site";
 
-/** Cadence of the two passes, in ms per character. */
-const ERASE_MS = 72;
-const TYPE_MS = 48;
-const PAUSE_MS = 280;
+/** Typing speed, in ms per character. */
+const TYPE_MS = 65;
 
-/** Scroll progress that arms the sequence. */
-const START = 0.17;
+/** The name is gone by this much of the track. */
+const NAME_OUT = 0.1;
 
-/** Hysteresis on the light/dark flip, so hovering the threshold cannot
- *  strobe the name and the header between their two colour schemes. A narrow
- *  band is not enough: the veil crosses its whole range in 14% of the track,
- *  so these have to sit far apart to cover a realistic scroll wobble. */
+/** The lights go down across this stretch, and the typing starts after it. */
+const DARK_FROM = 0.05;
+const DARK_SPAN = 0.37;
+const START = 0.4;
+
+/** Hysteresis on the header's light/dark flip, so scrolling across the
+ *  threshold cannot strobe it between the two colour schemes. */
 const DARK_ON = 0.78;
 const DARK_OFF = 0.22;
 
-type Phase = "idle" | "erasing" | "pause" | "typing" | "done";
+const smoothstep = (t: number) => t * t * (3 - 2 * t);
+const clamp01 = (t: number) => Math.min(1, Math.max(0, t));
 
 /**
- * Drives the pinned hero as its tall track scrolls past: a dark veil fades up,
- * the mono aside drops away, and the name deletes itself a character at a time
- * before the statement types out in the middle of the screen.
- *
- * Scroll position only arms the sequence — the typing runs on its own clock,
- * so it reads as something being written rather than something scrubbed back
- * and forth by the wheel.
+ * Drives the pinned hero as its tall track scrolls past. Scrolling fades the
+ * name out and the lights down; once the screen is dark the statement types
+ * itself in the middle, on its own clock.
  */
 export function useHeroScroll() {
   const trackRef = useRef<HTMLDivElement | null>(null);
-  const nameRef = useRef<HTMLHeadingElement | null>(null);
-  const taglineRef = useRef<HTMLParagraphElement | null>(null);
+  const nameBlockRef = useRef<HTMLDivElement | null>(null);
   const statementRef = useRef<HTMLDivElement | null>(null);
   const veilRef = useRef<HTMLDivElement | null>(null);
   const asideRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     // With motion reduced the track collapses to a single viewport (see
-    // Hero.css), so there is no travel to map — leave the hero at rest, name
-    // intact, rather than snapping it to the fully-scrolled state.
+    // Hero.css), so there is no travel to map — leave the hero at rest.
     if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
 
     let scrollRaf = 0;
     let clockRaf = 0;
+    let typing = false;
+    let typed = 0;
+    let mark = 0;
+    let inverted = false;
 
-    let phase: Phase = "idle";
-    let shown = NAME.length; // characters of the name still on screen
-    let typed = 0; // characters of the statement written so far
-    let mark = 0; // timestamp of the last character
-    let resumeAt = 0;
-    let inverted = false; // whether the hero is currently showing dark
-
-    const parts = (host: HTMLElement | null) =>
-      host
+    const statement = () => {
+      const host = statementRef.current;
+      return host
         ? {
             text: host.querySelector<HTMLElement>("[data-typed]"),
             ghost: host.querySelector<HTMLElement>("[data-ghost]"),
             caret: host.querySelector<HTMLElement>("[data-caret]"),
           }
         : null;
+    };
 
-    /* The ghost halves hold the not-yet-written characters at
-       `visibility: hidden`, so both blocks keep their full size and nothing
-       reflows as the caret travels. */
+    /* The ghost half holds the characters still to come at
+       `visibility: hidden`, so the block keeps its full size and nothing
+       reflows as the caret travels across it. */
     const render = () => {
-      const n = parts(nameRef.current);
-      if (n?.text && n.ghost) {
-        n.text.textContent = NAME.slice(0, shown);
-        n.ghost.textContent = NAME.slice(shown);
-      }
-      n?.caret?.classList.toggle("hero__caret--on", phase === "erasing");
-
-      const s = parts(statementRef.current);
+      const s = statement();
       if (s?.text && s.ghost) {
         s.text.textContent = TAGLINE.slice(0, typed);
         s.ghost.textContent = TAGLINE.slice(typed);
       }
-      s?.caret?.classList.toggle(
-        "hero__caret--on",
-        phase === "pause" || phase === "typing" || phase === "done",
-      );
-
-      const tagline = taglineRef.current;
-      if (tagline) tagline.style.opacity = phase === "idle" ? "1" : "0";
-    };
-
-    const stopClock = () => {
-      if (clockRaf) cancelAnimationFrame(clockRaf);
-      clockRaf = 0;
+      s?.caret?.classList.toggle("hero__caret--on", typing || typed > 0);
     };
 
     const tick = (now: number) => {
       clockRaf = 0;
+      if (!typing) return;
 
-      if (phase === "erasing") {
-        if (now - mark >= ERASE_MS) {
-          mark = now;
-          shown = Math.max(0, shown - 1);
-          if (shown === 0) {
-            phase = "pause";
-            resumeAt = now + PAUSE_MS;
-          }
-          render();
+      if (now - mark >= TYPE_MS) {
+        mark = now;
+        typed = Math.min(TAGLINE.length, typed + 1);
+        render();
+        if (typed === TAGLINE.length) {
+          typing = false;
+          return;
         }
-      } else if (phase === "pause") {
-        if (now >= resumeAt) {
-          phase = "typing";
-          mark = now;
-          render();
-        }
-      } else if (phase === "typing") {
-        if (now - mark >= TYPE_MS) {
-          mark = now;
-          typed = Math.min(TAGLINE.length, typed + 1);
-          if (typed === TAGLINE.length) phase = "done";
-          render();
-          if (phase === "done") return; // nothing left to animate
-        }
-      } else {
-        return;
       }
-
       clockRaf = requestAnimationFrame(tick);
-    };
-
-    const startClock = () => {
-      if (!clockRaf) clockRaf = requestAnimationFrame(tick);
     };
 
     const apply = () => {
@@ -135,50 +90,46 @@ export function useHeroScroll() {
 
       const r = track.getBoundingClientRect();
       const span = Math.max(1, r.height - window.innerHeight);
-      const p = Math.min(1, Math.max(0, -r.top / span));
+      const p = clamp01(-r.top / span);
 
-      if (phase === "idle" && p > START) {
-        phase = "erasing";
-        mark = performance.now();
-        render();
-        startClock();
-      } else if (phase !== "idle" && window.scrollY < 4) {
-        // Only rewind at the very top of the page. Keying this off progress
-        // instead meant a nudge upward — a trackpad, momentum, the rubber band
-        // at the top — put the name back and replayed the whole sequence.
-        stopClock();
-        phase = "idle";
-        shown = NAME.length;
-        typed = 0;
-        render();
-      }
+      // The name and its tagline simply leave, right at the top of the scroll.
+      const nameBlock = nameBlockRef.current;
+      if (nameBlock) nameBlock.style.opacity = (1 - smoothstep(clamp01(p / NAME_OUT))).toFixed(3);
 
-      // Everything behind the name goes dark, and the name inverts to stay
-      // readable. This has to finish before START, or the statement types
-      // white onto a background that is still light.
-      const d = Math.min(1, Math.max(0, (p - 0.03) / 0.14));
-      const dark = d * d * (3 - 2 * d); // smoothstep, so it eases in and out
+      // The lights go down over a long stretch: packed into a shorter run, a
+      // single flick of a trackpad covers the whole fade and the hero appears
+      // to snap from white to black.
+      const dark = smoothstep(clamp01((p - DARK_FROM) / DARK_SPAN));
       const veil = veilRef.current;
       if (veil) veil.style.opacity = (dark * 0.94).toFixed(3);
 
       if (!inverted && dark > DARK_ON) inverted = true;
       else if (inverted && dark < DARK_OFF) inverted = false;
 
-      const name = nameRef.current;
-      if (name) name.style.color = inverted ? "#FFFFFF" : "#0A0A0A";
-
       // The fixed header sits above the veil in the root stacking context, so
       // it has to invert too or it goes dark-on-dark. Published as a document
       // attribute to keep Header decoupled from the hero. Gated on the track
       // still being in view, or the header would stay inverted over the white
-      // sections below (p, and therefore dark, stay pinned at 1 up there).
-      const overHero = r.bottom > 0;
-      document.documentElement.dataset.heroDark = overHero && inverted ? "1" : "0";
+      // sections below (dark stays pinned at 1 up there).
+      document.documentElement.dataset.heroDark = r.bottom > 0 && inverted ? "1" : "0";
 
       const aside = asideRef.current;
-      if (aside && p > 0.02) {
-        aside.style.opacity = String(Math.max(0, 1 - p / 0.4));
-        aside.style.transform = `translateY(${(p * 26).toFixed(1)}px)`;
+      if (aside) aside.style.opacity = (1 - clamp01(p / 0.3)).toFixed(3);
+
+      if (!typing && typed === 0 && p > START) {
+        typing = true;
+        mark = performance.now();
+        render();
+        if (!clockRaf) clockRaf = requestAnimationFrame(tick);
+      } else if (typed > 0 && window.scrollY < 4) {
+        // Only rewind at the very top of the page. Keying this off progress
+        // instead meant a nudge upward — momentum, a trackpad, the rubber band
+        // at the top — cleared the line and retyped it.
+        if (clockRaf) cancelAnimationFrame(clockRaf);
+        clockRaf = 0;
+        typing = false;
+        typed = 0;
+        render();
       }
     };
 
@@ -194,11 +145,11 @@ export function useHeroScroll() {
 
     return () => {
       if (scrollRaf) cancelAnimationFrame(scrollRaf);
-      stopClock();
+      if (clockRaf) cancelAnimationFrame(clockRaf);
       window.removeEventListener("scroll", onScroll);
       delete document.documentElement.dataset.heroDark;
     };
   }, []);
 
-  return { trackRef, nameRef, taglineRef, statementRef, veilRef, asideRef };
+  return { trackRef, nameBlockRef, statementRef, veilRef, asideRef };
 }

@@ -10,7 +10,7 @@ import { CapabilityPanel } from "./CapabilityPanel";
 export function Hero() {
   const sectionRef = useRef<HTMLElement | null>(null);
   const { canvasRef, ringRef } = useCodeRainReveal(sectionRef);
-  const { trackRef, nameRef, taglineRef, statementRef, veilRef, asideRef } = useHeroScroll();
+  const { trackRef, nameBlockRef, statementRef, veilRef, asideRef } = useHeroScroll();
   const [openId, setOpenId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -82,18 +82,10 @@ export function Hero() {
 
           <div className="hero__bottom">
             <Reveal className="hero__name-block">
-              {/* Split so the hook can delete it a character at a time. The
-                  ghost half keeps the not-yet-written characters in the
-                  layout, so the block never resizes and the caret has
-                  somewhere to travel. aria-label carries the whole name. */}
-              <h1 ref={nameRef} className="hero__name" aria-label={NAME}>
-                <span data-typed>{NAME}</span>
-                <span className="hero__caret" data-caret aria-hidden="true" />
-                <span className="hero__ghost" data-ghost aria-hidden="true" />
-              </h1>
-              <p ref={taglineRef} className="hero__tagline">
-                {TAGLINE}
-              </p>
+              <div ref={nameBlockRef} className="hero__name-fade">
+                <h1 className="hero__name">{NAME}</h1>
+                <p className="hero__tagline">{TAGLINE}</p>
+              </div>
             </Reveal>
 
             <Reveal delay={0.12} className="hero__aside-wrap">
