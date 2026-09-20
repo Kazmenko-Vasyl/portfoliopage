@@ -6,5 +6,12 @@
   "compatibility_date": "2026-09-20",
   "assets": {
     "directory": "./dist"
-  }
+  },
+  // Binding the hostnames here rather than in the dashboard: an assets-only
+  // Worker has its trigger settings disabled there. Wrangler creates the
+  // custom domain and the DNS records on deploy.
+  "routes": [
+    { "pattern": "vkazmenko.com", "custom_domain": true },
+    { "pattern": "www.vkazmenko.com", "custom_domain": true }
+  ]
 }
