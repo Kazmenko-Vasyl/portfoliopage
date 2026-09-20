@@ -6,9 +6,15 @@ const ERASE_MS = 72;
 const TYPE_MS = 48;
 const PAUSE_MS = 280;
 
-/** Scroll progress that arms the sequence, and the point it rewinds at. */
+/** Scroll progress that arms the sequence. */
 const START = 0.17;
-const RESET = 0.05;
+
+/** Hysteresis on the light/dark flip, so hovering the threshold cannot
+ *  strobe the name and the header between their two colour schemes. A narrow
+ *  band is not enough: the veil crosses its whole range in 14% of the track,
+ *  so these have to sit far apart to cover a realistic scroll wobble. */
+const DARK_ON = 0.78;
+const DARK_OFF = 0.22;
 
 type Phase = "idle" | "erasing" | "pause" | "typing" | "done";
 
@@ -43,6 +49,7 @@ export function useHeroScroll() {
     let typed = 0; // characters of the statement written so far
     let mark = 0; // timestamp of the last character
     let resumeAt = 0;
+    let inverted = false; // whether the hero is currently showing dark
 
     const parts = (host: HTMLElement | null) =>
       host
@@ -69,7 +76,10 @@ export function useHeroScroll() {
         s.text.textContent = TAGLINE.slice(0, typed);
         s.ghost.textContent = TAGLINE.slice(typed);
       }
-      s?.caret?.classList.toggle("hero__caret--on", phase === "typing" || phase === "done");
+      s?.caret?.classList.toggle(
+        "hero__caret--on",
+        phase === "pause" || phase === "typing" || phase === "done",
+      );
 
       const tagline = taglineRef.current;
       if (tagline) tagline.style.opacity = phase === "idle" ? "1" : "0";
@@ -132,9 +142,10 @@ export function useHeroScroll() {
         mark = performance.now();
         render();
         startClock();
-      } else if (phase !== "idle" && p < RESET) {
-        // Back at the top: restore the name and clear the statement, so the
-        // sequence plays in full on the way down rather than half-finished.
+      } else if (phase !== "idle" && window.scrollY < 4) {
+        // Only rewind at the very top of the page. Keying this off progress
+        // instead meant a nudge upward — a trackpad, momentum, the rubber band
+        // at the top — put the name back and replayed the whole sequence.
         stopClock();
         phase = "idle";
         shown = NAME.length;
@@ -145,11 +156,16 @@ export function useHeroScroll() {
       // Everything behind the name goes dark, and the name inverts to stay
       // readable. This has to finish before START, or the statement types
       // white onto a background that is still light.
-      const dark = Math.min(1, Math.max(0, (p - 0.03) / 0.14));
+      const d = Math.min(1, Math.max(0, (p - 0.03) / 0.14));
+      const dark = d * d * (3 - 2 * d); // smoothstep, so it eases in and out
       const veil = veilRef.current;
       if (veil) veil.style.opacity = (dark * 0.94).toFixed(3);
+
+      if (!inverted && dark > DARK_ON) inverted = true;
+      else if (inverted && dark < DARK_OFF) inverted = false;
+
       const name = nameRef.current;
-      if (name) name.style.color = dark > 0.5 ? "#FFFFFF" : "#0A0A0A";
+      if (name) name.style.color = inverted ? "#FFFFFF" : "#0A0A0A";
 
       // The fixed header sits above the veil in the root stacking context, so
       // it has to invert too or it goes dark-on-dark. Published as a document
@@ -157,7 +173,7 @@ export function useHeroScroll() {
       // still being in view, or the header would stay inverted over the white
       // sections below (p, and therefore dark, stay pinned at 1 up there).
       const overHero = r.bottom > 0;
-      document.documentElement.dataset.heroDark = overHero && dark > 0.5 ? "1" : "0";
+      document.documentElement.dataset.heroDark = overHero && inverted ? "1" : "0";
 
       const aside = asideRef.current;
       if (aside && p > 0.02) {
