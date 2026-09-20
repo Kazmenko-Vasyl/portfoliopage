@@ -42,25 +42,25 @@
 
 /* Accent text needs a dark chip to be readable: lime on white is ~1.4:1, lime
    on ink is ~11:1. Hovering inverts to the call button's colours. */
-.header__nav a {
+.header__nav > a {
   padding: 5px 9px;
   color: var(--accent);
   background: var(--ink);
   transition: background 0.2s, color 0.2s;
 }
 
-.header__nav a:hover {
+.header__nav > a:hover {
   background: var(--accent);
   color: var(--ink);
 }
 
 /* Over the hero's veil the page is already near-black, so the chip would just
    be a dark square on dark — drop it and let the lime carry itself. */
-:root[data-hero-dark="1"] .header__nav a {
+:root[data-hero-dark="1"] .header__nav > a {
   background: transparent;
 }
 
-:root[data-hero-dark="1"] .header__nav a:hover {
+:root[data-hero-dark="1"] .header__nav > a:hover {
   background: var(--accent);
   color: var(--ink);
 }
@@ -86,8 +86,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 30px;
-  height: 26px;
+  width: 36px;
+  height: 32px;
   padding: 0;
   border: 0;
   background: transparent;
@@ -96,13 +96,13 @@
 }
 
 .header__call-toggle svg {
-  width: 15px;
-  height: 15px;
+  width: 17px;
+  height: 17px;
   display: block;
 }
 
 /* Collapsed to zero width so the reveal animates; `hidden` would not. */
-.header__nav a.header__call-number {
+.header__call-number {
   display: flex;
   align-items: center;
   max-width: 0;
@@ -118,14 +118,13 @@
   transition: max-width 0.28s cubic-bezier(0.2, 0.7, 0.2, 1), opacity 0.2s, padding 0.28s;
 }
 
-.header__call--open .header__nav a.header__call-number,
-.header__call--open a.header__call-number {
+.header__call--open .header__call-number {
   max-width: 14ch;
   padding: 0 10px 0 2px;
   opacity: 1;
 }
 
-.header__nav a.header__call-number:hover {
+.header__call-number:hover {
   background: var(--ink);
   color: var(--accent);
 }
@@ -137,10 +136,39 @@
   border-color: var(--accent);
 }
 
+.header__call-direct {
+  display: none;
+}
+
 @media (max-width: 900px) {
   /* Keep the call button; the section links are reachable by scrolling. */
-  .header__nav a:not(.header__call) {
+  .header__nav > a {
     display: none;
+  }
+
+  /* The reveal is a pointer affordance. On touch, dial on the first tap. */
+  .header__call-toggle,
+  .header__call-number {
+    display: none;
+  }
+
+  .header__call-direct {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 40px;
+    padding: 0 14px;
+    color: var(--ink);
+    font-size: 13px;
+    letter-spacing: 0.06em;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  .header__call-direct svg {
+    width: 17px;
+    height: 17px;
+    flex: none;
   }
 }
 

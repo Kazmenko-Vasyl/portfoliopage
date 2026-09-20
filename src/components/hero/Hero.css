@@ -210,6 +210,8 @@
 
 .hero__tagline {
   margin: 18px 0 0;
+  transform-origin: center center;
+  will-change: transform;
   font-size: clamp(20px, 2.1vw, 30px);
   line-height: 1.1;
   letter-spacing: -0.03em;

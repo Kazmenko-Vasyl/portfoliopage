@@ -119,4 +119,5 @@ export const PHONE_HREF = "tel:+12679029839";
 export const CONTACT = {
   email: "kazmenkovasya@gmail.com",
   github: "https://github.com/Kazmenko-Vasyl",
+  linkedin: "https://www.linkedin.com/in/vasyl-kazmenko-4172ab1a6/",
 };

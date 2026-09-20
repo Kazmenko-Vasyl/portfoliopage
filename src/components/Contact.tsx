@@ -19,6 +19,9 @@ export function Contact() {
         <a href={CONTACT.github} className="contact__link" target="_blank" rel="noreferrer">
           github
         </a>
+        <a href={CONTACT.linkedin} className="contact__link" target="_blank" rel="noreferrer">
+          linkedin
+        </a>
       </div>
 
       <div className="contact__footer">

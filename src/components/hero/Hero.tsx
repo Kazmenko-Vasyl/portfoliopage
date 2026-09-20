@@ -10,7 +10,7 @@ import { CapabilityPanel } from "./CapabilityPanel";
 export function Hero() {
   const sectionRef = useRef<HTMLElement | null>(null);
   const { canvasRef, ringRef } = useCodeRainReveal(sectionRef);
-  const { trackRef, nameRef, veilRef, asideRef } = useHeroScroll();
+  const { trackRef, nameRef, taglineRef, veilRef, asideRef } = useHeroScroll();
   const [openId, setOpenId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -73,7 +73,9 @@ export function Hero() {
               <h1 ref={nameRef} className="hero__name">
                 {NAME}
               </h1>
-              <p className="hero__tagline">{TAGLINE}</p>
+              <p ref={taglineRef} className="hero__tagline">
+                {TAGLINE}
+              </p>
             </Reveal>
 
             <Reveal delay={0.12} className="hero__aside-wrap">

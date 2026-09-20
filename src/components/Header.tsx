@@ -62,6 +62,14 @@ function CallButton() {
       >
         {PHONE}
       </a>
+
+      {/* On a phone there is no room for a reveal and no reason for one —
+          tapping should dial, not disclose. Swapped by media query so it
+          survives rotation without re-rendering. */}
+      <a className="header__call-direct" href={PHONE_HREF}>
+        <PhoneIcon />
+        <span>{PHONE}</span>
+      </a>
     </div>
   );
 }

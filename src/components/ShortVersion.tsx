@@ -26,7 +26,7 @@ const CARDS = [
 
 const STATS = [
   { value: "7", label: "businesses online" },
-  { value: "6+", label: "years building" },
+  { value: "9+", label: "years building" },
   { value: "1", label: "developer, start to finish" },
 ];
 

@@ -44,6 +44,9 @@
 }
 
 .short-version__cards {
+  /* Without this the grid column is sized to this subtree's min-content, and
+     the stats row below drags the whole section wider than a phone. */
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 1px;
@@ -119,4 +122,41 @@
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--text-faint);
+}
+
+/* Three stat columns need ~145px each to hold their labels; on a phone that
+   is wider than the screen, so they become rows. */
+@media (max-width: 860px) {
+  .short-version__stats {
+    grid-template-columns: 1fr;
+  }
+
+  .short-version__stat {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    padding: 18px 24px;
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .short-version__stat:last-child {
+    border-bottom: 0;
+  }
+
+  .short-version__stat-value {
+    font-size: 30px;
+  }
+
+  .short-version__stat-label {
+    margin: 0;
+  }
+
+  .short-version__card {
+    padding: 28px 24px;
+  }
+
+  .short-version__card-body {
+    font-size: 19px;
+  }
 }
