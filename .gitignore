@@ -13,3 +13,6 @@ design
 # emitted by `tsc -b` from vite.config.ts
 vite.config.js
 vite.config.d.ts
+
+# wrangler local state
+.wrangler

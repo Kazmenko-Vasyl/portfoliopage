@@ -24,13 +24,19 @@ npm run lint     # tsc --noEmit
 
 ## Deploying
 
-Static output, so any static host works. For Cloudflare Pages:
+Static output, so any static host works. Deployed to Cloudflare Workers via
+Workers Builds:
 
 | Setting | Value |
 | --- | --- |
 | Build command | `npm run build` |
-| Output directory | `dist` |
+| Deploy command | `npx wrangler deploy` |
 | Node version | 18 or newer |
+
+There is no server code. [`wrangler.jsonc`](wrangler.jsonc) declares `dist/` as
+a static asset directory, which is also what keeps `wrangler deploy` from
+trying to auto-detect a framework build (it wants Vite 6+ for that path; this
+project is on Vite 5).
 
 ## Editing content
 

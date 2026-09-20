@@ -1,0 +1,10 @@
+{
+  // Static-assets Worker: there is no server code, Cloudflare just serves the
+  // files `npm run build` writes into dist/. Having this file also stops
+  // `wrangler deploy` from trying to auto-detect a framework setup.
+  "name": "portfoliopage",
+  "compatibility_date": "2026-09-20",
+  "assets": {
+    "directory": "./dist"
+  }
+}
