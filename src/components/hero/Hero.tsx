@@ -1,16 +1,16 @@
 import "./Hero.css";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { HERO_BACKDROP, NAME, ROLE, TAGLINE } from "../../data/site";
 import { useCodeRainReveal } from "../../hooks/useCodeRainReveal";
-import { useHeroScroll } from "../../hooks/useHeroScroll";
+import { useHeroProgress } from "../../hooks/useHeroProgress";
 import { Reveal } from "../Reveal";
 import { CAPABILITIES } from "./capabilities";
 import { CapabilityPanel } from "./CapabilityPanel";
+import { HeroStatement } from "./HeroStatement";
 
 export function Hero() {
-  const sectionRef = useRef<HTMLElement | null>(null);
-  const { canvasRef, ringRef } = useCodeRainReveal(sectionRef);
-  const { trackRef, nameBlockRef, statementRef, veilRef, asideRef } = useHeroScroll();
+  const { trackRef, heroRef, written } = useHeroProgress(TAGLINE.length);
+  const { canvasRef, ringRef } = useCodeRainReveal(heroRef);
   const [openId, setOpenId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -26,27 +26,17 @@ export function Hero() {
 
   return (
     <div className="hero-track" ref={trackRef}>
-      <section className="hero" ref={sectionRef}>
+      <section className="hero" ref={heroRef}>
         <img className="hero__backdrop" src={HERO_BACKDROP} alt="" aria-hidden="true" />
         <div className="hero__scrim" />
 
         <canvas ref={canvasRef} className="hero__rain" />
 
-        <div ref={veilRef} className="hero__veil" />
+        <div className="hero__veil" />
 
         {open && <CapabilityPanel capability={open} onClose={() => setOpenId(null)} />}
 
-        {/* Duplicates the tagline, so it is hidden from assistive tech —
-            the real one is in the name block below. */}
-        <div ref={statementRef} className="hero__statement" aria-hidden="true">
-          <p className="hero__statement-text">
-            <span data-typed />
-            <span className="hero__caret" data-caret />
-            <span className="hero__ghost" data-ghost>
-              {TAGLINE}
-            </span>
-          </p>
-        </div>
+        <HeroStatement text={TAGLINE} written={written} />
 
         <div ref={ringRef} className="hero__ring">
           <span className="hero__ring-label">under the hood</span>
@@ -82,14 +72,14 @@ export function Hero() {
 
           <div className="hero__bottom">
             <Reveal className="hero__name-block">
-              <div ref={nameBlockRef} className="hero__name-fade">
+              <div className="hero__name-fade">
                 <h1 className="hero__name">{NAME}</h1>
                 <p className="hero__tagline">{TAGLINE}</p>
               </div>
             </Reveal>
 
             <Reveal delay={0.12} className="hero__aside-wrap">
-              <div ref={asideRef} className="hero__aside">
+              <div className="hero__aside">
                 <p className="hero__desc">
                   Payments software at Fiserv by day, websites for businesses by night. Designed
                   properly, quick on a phone, and easy for you to keep up to date.

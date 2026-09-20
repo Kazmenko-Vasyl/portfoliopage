@@ -7,6 +7,12 @@
 }
 
 .hero {
+  /* Published every frame by useHeroProgress; the mapping to opacity lives
+     here rather than in the hook. */
+  --hero-veil: 0;
+  --hero-name: 1;
+  --hero-aside: 1;
+
   position: sticky;
   top: 0;
   height: 100vh;
@@ -54,8 +60,14 @@
   inset: 0;
   z-index: 3;
   background: var(--ink);
-  opacity: 0;
+  opacity: var(--hero-veil);
   pointer-events: none;
+  will-change: opacity;
+}
+
+/* The name and its tagline leave together, right at the top of the scroll. */
+.hero__name-fade {
+  opacity: var(--hero-name);
   will-change: opacity;
 }
 
@@ -225,6 +237,7 @@
 }
 
 .hero__aside {
+  opacity: var(--hero-aside);
   font-family: var(--font-mono);
   font-size: 12px;
   line-height: 1.7;
@@ -328,23 +341,19 @@
   visibility: hidden;
 }
 
-/* Zero-width, so inserting it between the two halves cannot shift anything;
-   the bar itself is drawn outside the box. */
+/* Zero-width, so sitting between the written and unwritten halves cannot
+   shift either of them; the bar itself is drawn outside the box. It needs a
+   height of its own — a zero-height inline box would put the bar below the
+   baseline instead of over the cap height. */
 .hero__caret {
   position: relative;
-  display: none;
-  width: 0;
-}
-
-/* Needs a height of its own: a zero-height inline box puts the bar below the
-   baseline instead of over the cap height. */
-.hero__caret--on {
   display: inline-block;
+  width: 0;
   height: 0.78em;
   vertical-align: baseline;
 }
 
-.hero__caret--on::after {
+.hero__caret::after {
   content: "";
   position: absolute;
   left: 0.05em;
