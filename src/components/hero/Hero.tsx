@@ -10,7 +10,7 @@ import { CapabilityPanel } from "./CapabilityPanel";
 export function Hero() {
   const sectionRef = useRef<HTMLElement | null>(null);
   const { canvasRef, ringRef } = useCodeRainReveal(sectionRef);
-  const { trackRef, nameRef, taglineRef, veilRef, asideRef } = useHeroScroll();
+  const { trackRef, nameRef, taglineRef, statementRef, veilRef, asideRef } = useHeroScroll();
   const [openId, setOpenId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -35,6 +35,18 @@ export function Hero() {
         <div ref={veilRef} className="hero__veil" />
 
         {open && <CapabilityPanel capability={open} onClose={() => setOpenId(null)} />}
+
+        {/* Duplicates the tagline, so it is hidden from assistive tech —
+            the real one is in the name block below. */}
+        <div ref={statementRef} className="hero__statement" aria-hidden="true">
+          <p className="hero__statement-text">
+            <span data-typed />
+            <span className="hero__caret" data-caret />
+            <span className="hero__ghost" data-ghost>
+              {TAGLINE}
+            </span>
+          </p>
+        </div>
 
         <div ref={ringRef} className="hero__ring">
           <span className="hero__ring-label">under the hood</span>
@@ -70,8 +82,14 @@ export function Hero() {
 
           <div className="hero__bottom">
             <Reveal className="hero__name-block">
-              <h1 ref={nameRef} className="hero__name">
-                {NAME}
+              {/* Split so the hook can delete it a character at a time. The
+                  ghost half keeps the not-yet-written characters in the
+                  layout, so the block never resizes and the caret has
+                  somewhere to travel. aria-label carries the whole name. */}
+              <h1 ref={nameRef} className="hero__name" aria-label={NAME}>
+                <span data-typed>{NAME}</span>
+                <span className="hero__caret" data-caret aria-hidden="true" />
+                <span className="hero__ghost" data-ghost aria-hidden="true" />
               </h1>
               <p ref={taglineRef} className="hero__tagline">
                 {TAGLINE}

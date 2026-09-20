@@ -1,127 +1,155 @@
 import { useEffect, useRef } from "react";
+import { NAME, TAGLINE } from "../data/site";
+
+/** Cadence of the two passes, in ms per character. */
+const ERASE_MS = 26;
+const TYPE_MS = 38;
+const PAUSE_MS = 180;
+
+/** Scroll progress that arms the sequence, and the point it rewinds at. */
+const START = 0.17;
+const RESET = 0.05;
+
+type Phase = "idle" | "erasing" | "pause" | "typing" | "done";
 
 /**
- * Drives the pinned hero as its tall track scrolls past: the name swings up
- * into a vertical rail down the left edge, the tagline takes the middle of the
- * screen, a dark veil fades up behind both, and the mono aside drops away.
- * Progress is 0 at the top of the track and 1 once the sticky section has
- * travelled its full extra height.
+ * Drives the pinned hero as its tall track scrolls past: a dark veil fades up,
+ * the mono aside drops away, and the name deletes itself a character at a time
+ * before the statement types out in the middle of the screen.
+ *
+ * Scroll position only arms the sequence — the typing runs on its own clock,
+ * so it reads as something being written rather than something scrubbed back
+ * and forth by the wheel.
  */
 export function useHeroScroll() {
   const trackRef = useRef<HTMLDivElement | null>(null);
   const nameRef = useRef<HTMLHeadingElement | null>(null);
   const taglineRef = useRef<HTMLParagraphElement | null>(null);
+  const statementRef = useRef<HTMLDivElement | null>(null);
   const veilRef = useRef<HTMLDivElement | null>(null);
   const asideRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     // With motion reduced the track collapses to a single viewport (see
-    // Hero.css), so there is no travel to map — leave the hero in its resting
-    // state rather than snapping it to the fully-scrolled one.
+    // Hero.css), so there is no travel to map — leave the hero at rest, name
+    // intact, rather than snapping it to the fully-scrolled state.
     if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
 
-    let raf = 0;
+    let scrollRaf = 0;
+    let clockRaf = 0;
 
-    const RAIL_X = 22; // gutter between the rotated name and the left edge
-    const RAIL_GAP = 20; // clearance between that rail and the tagline
-    const EDGE_Y = 92; // top/bottom clearance, enough to miss the header
-    const EDGE_X = 24;
-    const TAGLINE_MAX_SCALE = 1.55;
+    let phase: Phase = "idle";
+    let shown = NAME.length; // characters of the name still on screen
+    let typed = 0; // characters of the statement written so far
+    let mark = 0; // timestamp of the last character
+    let resumeAt = 0;
 
-    // Resting geometry, remeasured on resize. Everything below is derived from
-    // the text's own box rather than the element's: `line-height: 0.82` means
-    // the glyphs overhang the <h1>, so its rect is the wrong thing to rotate.
-    let name1 = { tx: 0, ty: 0, scale: 1 };
-    let tag1 = { tx: 0, ty: 0, scale: 1 };
+    const parts = (host: HTMLElement | null) =>
+      host
+        ? {
+            text: host.querySelector<HTMLElement>("[data-typed]"),
+            ghost: host.querySelector<HTMLElement>("[data-ghost]"),
+            caret: host.querySelector<HTMLElement>("[data-caret]"),
+          }
+        : null;
 
-    const measure = () => {
-      const name = nameRef.current;
+    /* The ghost halves hold the not-yet-written characters at
+       `visibility: hidden`, so both blocks keep their full size and nothing
+       reflows as the caret travels. */
+    const render = () => {
+      const n = parts(nameRef.current);
+      if (n?.text && n.ghost) {
+        n.text.textContent = NAME.slice(0, shown);
+        n.ghost.textContent = NAME.slice(shown);
+      }
+      n?.caret?.classList.toggle("hero__caret--on", phase === "erasing");
+
+      const s = parts(statementRef.current);
+      if (s?.text && s.ghost) {
+        s.text.textContent = TAGLINE.slice(0, typed);
+        s.ghost.textContent = TAGLINE.slice(typed);
+      }
+      s?.caret?.classList.toggle("hero__caret--on", phase === "typing" || phase === "done");
+
       const tagline = taglineRef.current;
-      if (!name || !tagline) return;
+      if (tagline) tagline.style.opacity = phase === "idle" ? "1" : "0";
+    };
 
-      const prevName = name.style.transform;
-      const prevTag = tagline.style.transform;
-      name.style.transform = "none";
-      tagline.style.transform = "none";
+    const stopClock = () => {
+      if (clockRaf) cancelAnimationFrame(clockRaf);
+      clockRaf = 0;
+    };
 
-      const host = name.getBoundingClientRect();
-      const range = document.createRange();
-      range.selectNodeContents(name);
-      const text = range.getBoundingClientRect();
-      const tag = tagline.getBoundingClientRect();
+    const tick = (now: number) => {
+      clockRaf = 0;
 
-      name.style.transform = prevName;
-      tagline.style.transform = prevTag;
+      if (phase === "erasing") {
+        if (now - mark >= ERASE_MS) {
+          mark = now;
+          shown = Math.max(0, shown - 1);
+          if (shown === 0) {
+            phase = "pause";
+            resumeAt = now + PAUSE_MS;
+          }
+          render();
+        }
+      } else if (phase === "pause") {
+        if (now >= resumeAt) {
+          phase = "typing";
+          mark = now;
+          render();
+        }
+      } else if (phase === "typing") {
+        if (now - mark >= TYPE_MS) {
+          mark = now;
+          typed = Math.min(TAGLINE.length, typed + 1);
+          if (typed === TAGLINE.length) phase = "done";
+          render();
+          if (phase === "done") return; // nothing left to animate
+        }
+      } else {
+        return;
+      }
 
-      const vw = window.innerWidth;
-      const vh = window.innerHeight;
+      clockRaf = requestAnimationFrame(tick);
+    };
 
-      // rotate(-90deg) maps (x, y) to (y, -x): the text's width becomes its
-      // height, so it is the viewport height the name has to be scaled to fit.
-      const spanX = Math.max(1, text.width);
-      const spanY = Math.max(1, text.height);
-      const scale = Math.min(1, (vh - 2 * EDGE_Y) / spanX);
-
-      // Pivot on the middle of the text, not the element's bottom-left: the
-      // <h1> box is much wider than the words and a corner pivot swings them
-      // off the top of the screen halfway through the turn.
-      const cx = text.left + spanX / 2;
-      const cy = text.top + spanY / 2;
-      name.style.transformOrigin = `${(cx - host.left).toFixed(1)}px ${(cy - host.top).toFixed(1)}px`;
-
-      name1 = {
-        scale,
-        // rotated about its centre the text is spanY wide, so its left edge
-        // sits half that to the left of the pivot
-        tx: RAIL_X - cx + (spanY * scale) / 2,
-        ty: vh / 2 - cy,
-      };
-
-      // The tagline centres in what is left once the rail is taken out.
-      const railRight = RAIL_X + spanY * scale + RAIL_GAP;
-      const avail = Math.max(120, vw - EDGE_X - railRight);
-      const tScale = Math.max(1, Math.min(TAGLINE_MAX_SCALE, avail / Math.max(1, tag.width)));
-
-      tag1 = {
-        scale: tScale,
-        tx: railRight + avail / 2 - (tag.left + tag.width / 2),
-        ty: vh / 2 - (tag.top + tag.height / 2),
-      };
+    const startClock = () => {
+      if (!clockRaf) clockRaf = requestAnimationFrame(tick);
     };
 
     const apply = () => {
-      raf = 0;
+      scrollRaf = 0;
       const track = trackRef.current;
-      const name = nameRef.current;
-      const tagline = taglineRef.current;
-      if (!track || !name || !tagline) return;
+      if (!track) return;
 
       const r = track.getBoundingClientRect();
       const span = Math.max(1, r.height - window.innerHeight);
       const p = Math.min(1, Math.max(0, -r.top / span));
 
-      // The swing plays out over the first 80% of the track, smoothstepped, so
-      // it has settled before the About section arrives.
-      const g = Math.min(1, p / 0.8);
-      const e = g * g * (3 - 2 * g);
+      if (phase === "idle" && p > START) {
+        phase = "erasing";
+        mark = performance.now();
+        render();
+        startClock();
+      } else if (phase !== "idle" && p < RESET) {
+        // Back at the top: restore the name and clear the statement, so the
+        // sequence plays in full on the way down rather than half-finished.
+        stopClock();
+        phase = "idle";
+        shown = NAME.length;
+        typed = 0;
+        render();
+      }
 
-      name.style.transform =
-        `translate(${(name1.tx * e).toFixed(1)}px, ${(name1.ty * e).toFixed(1)}px) ` +
-        `rotate(${(-90 * e).toFixed(2)}deg) scale(${(1 + (name1.scale - 1) * e).toFixed(3)})`;
-
-      // Held back slightly so the name starts moving first and the tagline
-      // arrives into space the name has already left.
-      const t = Math.min(1, Math.max(0, (p - 0.1) / 0.6));
-      const te = t * t * (3 - 2 * t);
-      tagline.style.transform =
-        `translate(${(tag1.tx * te).toFixed(1)}px, ${(tag1.ty * te).toFixed(1)}px) ` +
-        `scale(${(1 + (tag1.scale - 1) * te).toFixed(3)})`;
-
-      // everything else goes dark; the name inverts to stay readable
-      const dark = Math.min(1, Math.max(0, (p - 0.08) / 0.32));
+      // Everything behind the name goes dark, and the name inverts to stay
+      // readable. This has to finish before START, or the statement types
+      // white onto a background that is still light.
+      const dark = Math.min(1, Math.max(0, (p - 0.03) / 0.14));
       const veil = veilRef.current;
       if (veil) veil.style.opacity = (dark * 0.94).toFixed(3);
-      name.style.color = dark > 0.5 ? "#FFFFFF" : "#0A0A0A";
+      const name = nameRef.current;
+      if (name) name.style.color = dark > 0.5 ? "#FFFFFF" : "#0A0A0A";
 
       // The fixed header sits above the veil in the root stacking context, so
       // it has to invert too or it goes dark-on-dark. Published as a document
@@ -139,35 +167,22 @@ export function useHeroScroll() {
     };
 
     const onScroll = () => {
-      if (raf) return;
-      raf = requestAnimationFrame(apply);
-    };
-
-    const onResize = () => {
-      measure();
-      onScroll();
+      if (scrollRaf) return;
+      scrollRaf = requestAnimationFrame(apply);
     };
 
     window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onResize);
 
-    // Wait for the webfont, or the geometry is measured against a fallback face.
-    const ready = document.fonts?.ready ?? Promise.resolve();
-    ready.then(() => {
-      measure();
-      apply();
-    });
-
-    measure();
+    render();
     apply();
 
     return () => {
-      if (raf) cancelAnimationFrame(raf);
+      if (scrollRaf) cancelAnimationFrame(scrollRaf);
+      stopClock();
       window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onResize);
       delete document.documentElement.dataset.heroDark;
     };
   }, []);
 
-  return { trackRef, nameRef, taglineRef, veilRef, asideRef };
+  return { trackRef, nameRef, taglineRef, statementRef, veilRef, asideRef };
 }

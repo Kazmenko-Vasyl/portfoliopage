@@ -197,8 +197,6 @@
   font-weight: 900;
   color: var(--ink);
   text-transform: uppercase;
-  transform-origin: left bottom;
-  will-change: transform;
   transition: color 0.35s;
   -webkit-text-stroke: 1px rgba(200, 255, 61, 0.85);
   paint-order: stroke fill;
@@ -210,9 +208,8 @@
 
 .hero__tagline {
   margin: 18px 0 0;
-  transform-origin: center center;
-  will-change: transform;
   font-size: clamp(20px, 2.1vw, 30px);
+  transition: opacity 0.3s;
   line-height: 1.1;
   letter-spacing: -0.03em;
   font-weight: 600;
@@ -322,4 +319,72 @@
   .hero-track {
     height: 100vh;
   }
+}
+
+/* --- typewriter --- */
+
+/* Holds the characters that have not been written yet: invisible, but still
+   taking up space, so neither block reflows as the caret moves. */
+.hero__ghost {
+  visibility: hidden;
+}
+
+/* Zero-width, so inserting it between the two halves cannot shift anything;
+   the bar itself is drawn outside the box. */
+.hero__caret {
+  position: relative;
+  display: none;
+  width: 0;
+}
+
+/* Needs a height of its own: a zero-height inline box puts the bar below the
+   baseline instead of over the cap height. */
+.hero__caret--on {
+  display: inline-block;
+  height: 0.78em;
+  vertical-align: baseline;
+}
+
+.hero__caret--on::after {
+  content: "";
+  position: absolute;
+  left: 0.05em;
+  bottom: -0.04em;
+  width: 0.46ch;
+  height: 0.78em;
+  background: var(--accent);
+  animation: om-caret 1s steps(1) infinite;
+}
+
+@keyframes om-caret {
+  0%,
+  50% {
+    opacity: 1;
+  }
+  50.01%,
+  100% {
+    opacity: 0;
+  }
+}
+
+/* The statement types out over the veil, so it sits at the name's level. */
+.hero__statement {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  display: grid;
+  place-items: center;
+  padding: 96px clamp(20px, 7vw, 120px) 96px;
+  pointer-events: none;
+}
+
+.hero__statement-text {
+  margin: 0;
+  max-width: 19ch;
+  font-size: clamp(27px, 4.4vw, 64px);
+  line-height: 1.12;
+  letter-spacing: -0.035em;
+  font-weight: 700;
+  color: #ffffff;
+  text-wrap: balance;
 }
