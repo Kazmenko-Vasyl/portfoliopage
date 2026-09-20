@@ -2,9 +2,9 @@ import { useEffect, useRef } from "react";
 import { NAME, TAGLINE } from "../data/site";
 
 /** Cadence of the two passes, in ms per character. */
-const ERASE_MS = 26;
-const TYPE_MS = 38;
-const PAUSE_MS = 180;
+const ERASE_MS = 72;
+const TYPE_MS = 48;
+const PAUSE_MS = 280;
 
 /** Scroll progress that arms the sequence, and the point it rewinds at. */
 const START = 0.17;
