@@ -1,0 +1,159 @@
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 32px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-dimmer);
+  transition: color 0.3s, opacity 0.35s;
+}
+
+.header__brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.header__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: om-blink 2.4s infinite;
+}
+
+.header__name {
+  color: var(--ink);
+  transition: color 0.3s;
+}
+
+.header__nav {
+  display: flex;
+  gap: 8px;
+}
+
+/* Accent text needs a dark chip to be readable: lime on white is ~1.4:1, lime
+   on ink is ~11:1. Hovering inverts to the call button's colours. */
+.header__nav a {
+  padding: 5px 9px;
+  color: var(--accent);
+  background: var(--ink);
+  transition: background 0.2s, color 0.2s;
+}
+
+.header__nav a:hover {
+  background: var(--accent);
+  color: var(--ink);
+}
+
+/* Over the hero's veil the page is already near-black, so the chip would just
+   be a dark square on dark — drop it and let the lime carry itself. */
+:root[data-hero-dark="1"] .header__nav a {
+  background: transparent;
+}
+
+:root[data-hero-dark="1"] .header__nav a:hover {
+  background: var(--accent);
+  color: var(--ink);
+}
+
+/* --- call button: icon only until clicked, then the number slides out --- */
+.header__call {
+  display: flex;
+  align-items: stretch;
+  margin-left: 6px;
+  border: 1px solid var(--ink);
+  background: var(--accent);
+  color: var(--ink);
+  overflow: hidden;
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+
+.header__call:hover {
+  box-shadow: 3px 3px 0 var(--ink);
+  transform: translateY(-1px);
+}
+
+.header__call-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 26px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.header__call-toggle svg {
+  width: 15px;
+  height: 15px;
+  display: block;
+}
+
+/* Collapsed to zero width so the reveal animates; `hidden` would not. */
+.header__nav a.header__call-number {
+  display: flex;
+  align-items: center;
+  max-width: 0;
+  padding: 0;
+  opacity: 0;
+  color: var(--ink);
+  background: transparent;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  transition: max-width 0.28s cubic-bezier(0.2, 0.7, 0.2, 1), opacity 0.2s, padding 0.28s;
+}
+
+.header__call--open .header__nav a.header__call-number,
+.header__call--open a.header__call-number {
+  max-width: 14ch;
+  padding: 0 10px 0 2px;
+  opacity: 1;
+}
+
+.header__nav a.header__call-number:hover {
+  background: var(--ink);
+  color: var(--accent);
+}
+
+/* Stays lime-on-dark rather than inverting with the rest of the header. */
+:root[data-hero-dark="1"] .header__call {
+  background: var(--accent);
+  color: var(--ink);
+  border-color: var(--accent);
+}
+
+@media (max-width: 900px) {
+  /* Keep the call button; the section links are reachable by scrolling. */
+  .header__nav a:not(.header__call) {
+    display: none;
+  }
+}
+
+@media (max-width: 760px) {
+  .header {
+    padding: 14px 16px;
+  }
+
+  .header__brand span:last-child {
+    display: none;
+  }
+
+  .header__call {
+    margin-left: 0;
+  }
+}

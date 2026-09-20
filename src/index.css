@@ -1,0 +1,231 @@
+:root {
+  --bg: #ffffff;
+  --bg-raised: #f6f6f3;
+  --bg-panel: #f6f6f3;
+  --bg-panel-alt: #f2f2ee;
+  --bg-sunken: #efefe9;
+  --line: #e6e6e0;
+  --line-soft: #e0e0da;
+  --line-softer: #d8d8d2;
+  --ink: #0a0a0a;
+  --text: #2e2e2a;
+  --text-dim: #5f5f59;
+  --text-dimmer: #6b6b65;
+  --text-faint: #8a8a83;
+  --text-faintest: #a0a099;
+  --text-ghost: #b4b4ad;
+  --accent: #c8ff3d;
+  /* Darkened accent for text and hairlines — #c8ff3d itself fails contrast
+     on white, so it stays a *fill* color and this takes over as a *foreground*
+     color (eyebrows, indices, arrows, link hover). */
+  --accent-ink: #5c7a00;
+  --font-sans: "Archivo", Helvetica, sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+
+  /* marquee / syntax hues */
+  --hue-react: #2563eb;
+  --hue-ts: #0e7490;
+  --hue-next: #6d28d9;
+  --hue-ds: #b45309;
+  --hue-gl: #047857;
+  --hue-a11y: #be185d;
+  --hue-motion: #4338ca;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  /* `clip`, not `hidden`: hidden would make this a scroll container and break
+     the hero's `position: sticky` pin. */
+  overflow-x: clip;
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--ink);
+}
+
+a {
+  color: var(--ink);
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--accent-ink);
+}
+
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+
+@keyframes om-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes om-blink {
+  0%,
+  60% {
+    opacity: 1;
+  }
+  61%,
+  100% {
+    opacity: 0.15;
+  }
+}
+
+/* --- hero capability chips: slow independent drifts --- */
+@keyframes om-float-a {
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(-2.5deg);
+  }
+  50% {
+    transform: translate(9px, -9px) rotate(-1deg);
+  }
+}
+
+@keyframes om-float-b {
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(2deg);
+  }
+  50% {
+    transform: translate(-11px, -7px) rotate(3.5deg);
+  }
+}
+
+@keyframes om-float-c {
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(1deg);
+  }
+  50% {
+    transform: translate(8px, 7px) rotate(-1.5deg);
+  }
+}
+
+/* --- panel demo loops (all share the same 4.4s bar) --- */
+@keyframes om-pop {
+  0%,
+  7% {
+    opacity: 0;
+    transform: translateY(9px) scale(0.97);
+  }
+  17%,
+  88% {
+    opacity: 1;
+    transform: none;
+  }
+  100% {
+    opacity: 0;
+    transform: none;
+  }
+}
+
+@keyframes om-type {
+  0%,
+  6% {
+    width: 0;
+  }
+  42%,
+  100% {
+    width: 100%;
+  }
+}
+
+@keyframes om-stage {
+  0%,
+  22% {
+    background: var(--bg);
+    border-color: var(--line-softer);
+  }
+  32%,
+  100% {
+    background: var(--accent);
+    border-color: var(--ink);
+  }
+}
+
+@keyframes om-prog {
+  0% {
+    width: 0;
+  }
+  88%,
+  100% {
+    width: 100%;
+  }
+}
+
+@keyframes om-sweep {
+  0% {
+    transform: translateY(-6px);
+    opacity: 1;
+  }
+  82% {
+    transform: translateY(150px);
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes om-fadeout {
+  0%,
+  6% {
+    opacity: 1;
+  }
+  20%,
+  88% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes om-caret {
+  0%,
+  55% {
+    opacity: 1;
+  }
+  56%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

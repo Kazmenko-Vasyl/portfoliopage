@@ -1,0 +1,5 @@
+.app {
+  background: var(--bg);
+  overflow-x: clip;
+  position: relative;
+}

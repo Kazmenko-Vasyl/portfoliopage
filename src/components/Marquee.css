@@ -1,0 +1,31 @@
+.marquee {
+  border-block: 1px solid var(--line);
+  background: var(--bg-panel);
+  overflow: hidden;
+  padding: 16px 0;
+}
+
+.marquee__track {
+  display: flex;
+  width: max-content;
+  animation: om-marquee 26s linear infinite;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+
+.marquee__group {
+  display: flex;
+  gap: 40px;
+  flex: none;
+  width: max-content;
+  padding-right: 40px;
+}
+
+.marquee__dot {
+  color: var(--accent-ink);
+  margin-left: 40px;
+}

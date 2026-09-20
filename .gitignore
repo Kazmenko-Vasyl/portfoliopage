@@ -1,0 +1,15 @@
+node_modules
+dist
+dist-ssr
+*.local
+.DS_Store
+*.tsbuildinfo
+
+# Original photos, screenshots and the Claude Design export these assets were
+# made from. Kept out of the repo because nothing builds from them — the
+# optimised .webp files in public/ are what the site actually ships.
+design
+
+# emitted by `tsc -b` from vite.config.ts
+vite.config.js
+vite.config.d.ts

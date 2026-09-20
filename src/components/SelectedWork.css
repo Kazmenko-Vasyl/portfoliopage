@@ -1,0 +1,152 @@
+.selected-work {
+  padding: 120px 32px 40px;
+}
+
+.selected-work__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin-bottom: 56px;
+}
+
+.selected-work__title {
+  font-size: clamp(44px, 8vw, 132px);
+  line-height: 0.86;
+  letter-spacing: -0.05em;
+  font-weight: 900;
+}
+
+.selected-work__eyebrow {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.selected-work__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+  gap: 40px;
+  align-items: center;
+  padding: 44px 0;
+  border-top: 1px solid var(--line);
+}
+
+.selected-work__row:last-child {
+  border-bottom: 1px solid var(--line);
+}
+
+.selected-work__row--reverse {
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+}
+
+@media (max-width: 760px) {
+  .selected-work__row,
+  .selected-work__row--reverse {
+    grid-template-columns: 1fr;
+  }
+  .selected-work__row--reverse {
+    display: flex;
+    flex-direction: column-reverse;
+  }
+}
+
+.selected-work__index {
+  margin: 0 0 14px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  color: var(--accent-ink);
+}
+
+.selected-work__project-title {
+  margin: 0 0 14px;
+  font-size: clamp(30px, 3.6vw, 52px);
+  line-height: 1;
+  letter-spacing: -0.04em;
+  font-weight: 800;
+}
+
+.selected-work__description {
+  margin: 0 0 20px;
+  font-size: 17px;
+  line-height: 1.55;
+  color: var(--text-dim);
+  max-width: 40ch;
+  text-wrap: pretty;
+}
+
+.selected-work__tags {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-dimmer);
+}
+
+.selected-work__tag {
+  border: 1px solid var(--line-soft);
+  padding: 6px 10px;
+}
+
+.selected-work__shot {
+  aspect-ratio: 16 / 10;
+  border: 1px solid var(--line-soft);
+  background-image: repeating-linear-gradient(
+    135deg,
+    var(--bg-sunken) 0 12px,
+    var(--bg) 12px 24px
+  );
+  display: flex;
+  align-items: flex-end;
+  padding: 16px;
+  transition: border-color 0.2s;
+}
+
+.selected-work__row:hover .selected-work__shot {
+  border-color: var(--ink);
+}
+
+.selected-work__shot-label {
+  position: relative;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-faintest);
+}
+
+/* --- real screenshot tiles --- */
+.selected-work__shot--image {
+  position: relative;
+  overflow: hidden;
+  background-image: none;
+  background: var(--bg-sunken);
+}
+
+.selected-work__shot-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  transition: transform 0.5s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+.selected-work__row:hover .selected-work__shot-img {
+  transform: scale(1.03);
+}
+
+/* Keep the caption legible over the artwork. */
+.selected-work__shot--image .selected-work__shot-label {
+  color: var(--ink);
+  background: var(--accent);
+  padding: 5px 9px;
+}
