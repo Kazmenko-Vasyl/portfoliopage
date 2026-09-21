@@ -304,7 +304,12 @@ export function useCodeRainReveal(
       cols = [];
       for (let i = 0; i < n; i++) {
         cols.push({
-          y: Math.random() * -H,
+          // Seeded across the panel, and a little past the bottom, so the rain
+          // is already mid-fall on the first frame. Starting every column
+          // above the top — which is right when one RECYCLES — means the mask
+          // opens onto an empty panel and the code only arrives a second or so
+          // later, once the first columns have fallen far enough to show.
+          y: Math.random() * H * 1.35,
           v: (0.9 + Math.random() * 2.1) * (fontPx * 0.14),
           len: 8 + Math.floor(Math.random() * 22),
           chars: [],

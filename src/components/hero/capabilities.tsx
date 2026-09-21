@@ -103,7 +103,7 @@ function BuildDemo() {
 }
 
 function ShipDemo() {
-  const stages = ["commit", "test", "build", "deploy"];
+  const stages = ["build", "review", "launch", "live"];
   return (
     <div className="demo demo--ship">
       <div className="demo__stages">
@@ -117,9 +117,9 @@ function ShipDemo() {
         <div className="demo__progress-fill" />
       </div>
       <div className="demo__ship-footer">
-        <span>42 tests · 0 failing</span>
+        <span>checked on phone, tablet, desktop</span>
         <span className="demo__live" style={{ animationDelay: "2.3s" }}>
-          live in prod
+          your domain
         </span>
       </div>
     </div>
@@ -128,17 +128,17 @@ function ShipDemo() {
 
 function ScaleDemo() {
   const branches = [
-    { name: "Button", note: "· base", tone: "muted" as const, delay: null },
-    { name: "Button.Icon", note: "+ new", tone: "new" as const, delay: "0.6s" },
-    { name: "Button.Split", note: "+ new", tone: "new" as const, delay: "1.2s" },
-    { name: "Button.Menu", note: "+ new", tone: "new" as const, delay: "1.8s", last: true },
+    { name: "Home", note: "· live", tone: "muted" as const, delay: null },
+    { name: "Services", note: "+ added", tone: "new" as const, delay: "0.6s" },
+    { name: "Booking", note: "+ added", tone: "new" as const, delay: "1.2s" },
+    { name: "Reviews", note: "+ added", tone: "new" as const, delay: "1.8s", last: true },
   ];
 
   return (
     <div className="demo demo--scale">
       <div className="demo__tree">
         <div>
-          <span className="demo__branch">├─</span> App
+          <span className="demo__branch">├─</span> Your site
         </div>
         {branches.map((b) => (
           <div
@@ -152,8 +152,8 @@ function ScaleDemo() {
         ))}
       </div>
       <div className="demo__scale-footer">
-        <span>one primitive</span>
-        <span className="demo__new">3 variants, 0 rewrites</span>
+        <span>start with one page</span>
+        <span className="demo__new">add more, no rebuild</span>
       </div>
     </div>
   );
@@ -167,22 +167,22 @@ function ScratchDemo() {
         <span className="demo__empty">empty page</span>
         <div className="demo__page-body">
           <div className="demo__page-nav" style={{ animationDelay: "0.3s" }}>
-            <span className="demo__brand">Acme</span>
+            <span className="demo__brand">Your business</span>
             <span className="demo__nav-links">
-              <span>work</span>
-              <span>about</span>
+              <span>services</span>
+              <span>prices</span>
               <span>contact</span>
             </span>
           </div>
           <div className="demo__headline" style={{ animationDelay: "0.9s" }}>
-            Ship it this week.
+            Open for bookings.
           </div>
           <div className="demo__sub" style={{ animationDelay: "1.3s" }}>
-            One page. Real content. No lorem ipsum.
+            Your words, your photos, your prices — not a template.
           </div>
           <div className="demo__page-ctas" style={{ animationDelay: "1.8s" }}>
-            <span className="demo__page-cta demo__page-cta--primary">Start</span>
-            <span className="demo__page-cta">Docs</span>
+            <span className="demo__page-cta demo__page-cta--primary">Book now</span>
+            <span className="demo__page-cta">Call</span>
           </div>
           <div className="demo__blocks" style={{ animationDelay: "2.4s" }}>
             <span />
