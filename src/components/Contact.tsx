@@ -1,5 +1,5 @@
 import "./Contact.css";
-import { CONTACT, NAME, PHONE, PHONE_HREF } from "../data/site";
+import { AREA, BUSINESS, CONTACT, NAME, PHONE, PHONE_HREF } from "../data/site";
 
 export function Contact() {
   const year = new Date().getFullYear();
@@ -26,12 +26,14 @@ export function Contact() {
 
       <div className="contact__footer">
         <span>
-          {NAME} — web design &amp; development ·{" "}
+          {BUSINESS} — {AREA} ·{" "}
           <a href={PHONE_HREF} className="contact__footer-phone">
             {PHONE}
           </a>
         </span>
-        <span>built by hand · {year}</span>
+        <span>
+          {NAME} · built by hand · {year}
+        </span>
       </div>
     </section>
   );

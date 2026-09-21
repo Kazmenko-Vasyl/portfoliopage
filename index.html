@@ -33,6 +33,30 @@
       href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;800;900&family=JetBrains+Mono:wght@400;500&display=swap"
       rel="stylesheet"
     />
+
+    <!-- Ties this site to the Google Business Profile. The name, phone and
+         URL must match the listing exactly or Google treats them as two
+         different businesses. -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "ProfessionalService",
+        "name": "Kazmenko Web Design",
+        "description": "Websites, online stores and booking systems for small businesses.",
+        "url": "https://vkazmenko.com/",
+        "image": "https://vkazmenko.com/og.jpg",
+        "telephone": "+1-267-902-9839",
+        "email": "kazmenkovasya@gmail.com",
+        "priceRange": "$$",
+        "founder": { "@type": "Person", "name": "Vasyl Kazmenko" },
+        "areaServed": { "@type": "City", "name": "Philadelphia", "address": { "@type": "PostalAddress", "addressRegion": "PA", "addressCountry": "US" } },
+        "knowsAbout": ["Web design", "Online stores", "Booking systems", "Payment integration"],
+        "sameAs": [
+          "https://www.linkedin.com/in/vasyl-kazmenko-4172ab1a6/",
+          "https://github.com/Kazmenko-Vasyl"
+        ]
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>
