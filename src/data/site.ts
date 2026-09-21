@@ -1,7 +1,7 @@
 export const NAME = "Vasyl Kazmenko";
 /** Registered on the Google Business Profile. Google cross-checks this against
  *  the site, so the two have to match exactly. */
-export const BUSINESS = "Kazmenko Web Design";
+export const BUSINESS = "Kazmenko Web Development";
 /** Where the business profile says it works. */
 export const AREA = "Philadelphia, PA";
 export const ROLE = "software developer @ fiserv";
