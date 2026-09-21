@@ -15,6 +15,7 @@ export function AboutPage() {
         alt="Vasyl Kazmenko"
         width={900}
         height={1200}
+        loading="lazy"
         decoding="async"
       />
 

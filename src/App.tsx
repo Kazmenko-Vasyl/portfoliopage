@@ -15,14 +15,18 @@ export default function App() {
     <div className="app">
       <ScrollProgressBar />
       <Header />
-      <Hero />
-      <AboutPage />
-      <Marquee />
-      <ShortVersion />
-      <SelectedWork />
-      <Toolkit />
-      <Pricing />
-      <Contact />
+      {/* Every section lives in one landmark, so a screen-reader user can jump
+          straight to the content and skip the fixed header. */}
+      <main>
+        <Hero />
+        <AboutPage />
+        <Marquee />
+        <ShortVersion />
+        <SelectedWork />
+        <Toolkit />
+        <Pricing />
+        <Contact />
+      </main>
     </div>
   );
 }

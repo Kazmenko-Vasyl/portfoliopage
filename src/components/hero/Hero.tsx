@@ -28,7 +28,17 @@ export function Hero() {
   return (
     <div className="hero-track" ref={trackRef}>
       <section className="hero" ref={heroRef}>
-        <img className="hero__backdrop" src={HERO_BACKDROP} alt="" aria-hidden="true" />
+        {/* Decorative, but it is the largest thing painted above the fold, so it
+            is what Largest Contentful Paint waits for. Flagged high so it is
+            fetched alongside the CSS rather than queued behind it. */}
+        <img
+          className="hero__backdrop"
+          src={HERO_BACKDROP}
+          alt=""
+          aria-hidden="true"
+          fetchPriority="high"
+          decoding="async"
+        />
         <div className="hero__scrim" />
 
         <canvas ref={canvasRef} className="hero__rain" aria-hidden="true" />

@@ -11,9 +11,11 @@
   --text: #2e2e2a;
   --text-dim: #5f5f59;
   --text-dimmer: #6b6b65;
-  --text-faint: #8a8a83;
-  --text-faintest: #a0a099;
-  --text-ghost: #b4b4ad;
+  /* The lightest grey that still clears 4.5:1 on both page backgrounds — at
+     #8a8a83 every eyebrow, stat label and fact label on the site failed it.
+     There is no shade lighter than this that passes, so there is no
+     --text-faintest any more; it was 2.4:1 in the footer. */
+  --text-faint: #6e6e67;
   --accent: #c8ff3d;
   /* Darkened accent for text and hairlines — #c8ff3d itself fails contrast
      on white, so it stays a *fill* color and this takes over as a *foreground*

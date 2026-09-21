@@ -157,7 +157,7 @@
 .demo__spec-title {
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--text-ghost);
+  color: var(--text-faint);
 }
 
 .demo__spec-row {
@@ -248,7 +248,7 @@
   font-size: 9px;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--text-ghost);
+  color: var(--text-faint);
 }
 
 .demo__variant {
@@ -271,7 +271,7 @@
 
 .demo__variant--disabled {
   border: 1px dashed var(--line-softer);
-  color: var(--text-ghost);
+  color: var(--text-faint);
 }
 
 /* 03 ship */
@@ -363,7 +363,7 @@
 }
 
 .demo__muted {
-  color: var(--text-ghost);
+  color: var(--text-faint);
 }
 
 .demo__new {
@@ -408,7 +408,7 @@
   font-size: 9px;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: #c9c9c2;
+  color: var(--text-faint);
   animation: om-fadeout 4.4s ease-in-out infinite;
 }
 
