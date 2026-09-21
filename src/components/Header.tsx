@@ -1,6 +1,14 @@
 import "./Header.css";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { NAME, PHONE, PHONE_HREF } from "../data/site";
+import { HeaderMenu } from "./HeaderMenu";
+
+const LINKS = [
+  { href: "#work", label: "work" },
+  { href: "#stack", label: "stack" },
+  { href: "#pricing", label: "pricing" },
+  { href: "#contact", label: "contact" },
+];
 
 /** Lucide's `phone` glyph, inlined rather than pulling in the whole icon set. */
 function PhoneIcon() {
@@ -20,75 +28,64 @@ function PhoneIcon() {
   );
 }
 
-function CallButton() {
+export function Header() {
   const [open, setOpen] = useState(false);
-  const wrapRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     if (!open) return;
+
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") setOpen(false);
     };
-    const onDown = (e: PointerEvent) => {
-      if (!wrapRef.current?.contains(e.target as Node)) setOpen(false);
-    };
     window.addEventListener("keydown", onKey);
-    window.addEventListener("pointerdown", onDown);
+
+    // The menu covers the whole screen, so the page behind it should not
+    // scroll under the finger.
+    const { overflow } = document.body.style;
+    document.body.style.overflow = "hidden";
+
     return () => {
       window.removeEventListener("keydown", onKey);
-      window.removeEventListener("pointerdown", onDown);
+      document.body.style.overflow = overflow;
     };
   }, [open]);
 
   return (
-    <div ref={wrapRef} className={"header__call" + (open ? " header__call--open" : "")}>
-      <button
-        type="button"
-        className="header__call-toggle"
-        onClick={() => setOpen((v) => !v)}
-        aria-expanded={open}
-        aria-label={open ? "Hide phone number" : "Show phone number"}
-      >
-        <PhoneIcon />
-      </button>
-
-      {/* Kept mounted so it can slide out, and kept out of the tab order and
-          the accessibility tree while collapsed. */}
-      <a
-        className="header__call-number"
-        href={PHONE_HREF}
-        tabIndex={open ? 0 : -1}
-        aria-hidden={!open}
-      >
-        {PHONE}
-      </a>
-
-      {/* On a phone there is no room for a reveal and no reason for one —
-          tapping should dial, not disclose. Swapped by media query so it
-          survives rotation without re-rendering. */}
-      <a className="header__call-direct" href={PHONE_HREF}>
-        <PhoneIcon />
-        <span>{PHONE}</span>
-      </a>
-    </div>
-  );
-}
-
-export function Header() {
-  return (
-    <header className="header">
+    <header className={"header" + (open ? " header--open" : "")}>
       <div className="header__brand">
         <span className="header__dot" />
         <span className="header__name">{NAME}</span>
         <span>/ web design &amp; development</span>
       </div>
+
       <nav className="header__nav">
-        <a href="#work">work</a>
-        <a href="#stack">stack</a>
-        <a href="#pricing">pricing</a>
-        <a href="#contact">contact</a>
-        <CallButton />
+        {LINKS.map((link) => (
+          <a key={link.href} href={link.href}>
+            {link.label}
+          </a>
+        ))}
       </nav>
+
+      {/* Icon only: the number is in the contact section, and here it just
+          takes up room. The label is what carries it to screen readers. */}
+      <a className="header__call" href={PHONE_HREF} aria-label={`Call or text ${PHONE}`}>
+        <PhoneIcon />
+      </a>
+
+      <button
+        type="button"
+        className="header__burger"
+        aria-expanded={open}
+        aria-controls="header-menu"
+        aria-label={open ? "Close menu" : "Open menu"}
+        onClick={() => setOpen((v) => !v)}
+      >
+        <span className="header__burger-bar" />
+        <span className="header__burger-bar" />
+        <span className="header__burger-bar" />
+      </button>
+
+      {open && <HeaderMenu links={LINKS} onNavigate={() => setOpen(false)} />}
     </header>
   );
 }

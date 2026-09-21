@@ -6,6 +6,7 @@ import { useHeroProgress } from "../../hooks/useHeroProgress";
 import { Reveal } from "../Reveal";
 import { CAPABILITIES } from "./capabilities";
 import { CapabilityPanel } from "./CapabilityPanel";
+import { HeroName } from "./HeroName";
 import { HeroStatement } from "./HeroStatement";
 
 export function Hero() {
@@ -48,6 +49,13 @@ export function Hero() {
           </Reveal>
 
           <div className="hero__chips">
+            {/* Without this nobody knows the chips do anything — they read as
+                decoration. Two words, swapped by whether there is a pointer. */}
+            <p className="hero__chips-hint">
+              <span className="hero__chips-hint--pointer">click</span>
+              <span className="hero__chips-hint--touch">tap</span> to open
+            </p>
+
             {CAPABILITIES.map((c) => (
               <button
                 key={c.id}
@@ -72,10 +80,8 @@ export function Hero() {
 
           <div className="hero__bottom">
             <Reveal className="hero__name-block">
-              <div className="hero__name-fade">
-                <h1 className="hero__name">{NAME}</h1>
-                <p className="hero__tagline">{TAGLINE}</p>
-              </div>
+              <HeroName text={NAME} />
+              <p className="hero__tagline">{TAGLINE}</p>
             </Reveal>
 
             <Reveal delay={0.12} className="hero__aside-wrap">

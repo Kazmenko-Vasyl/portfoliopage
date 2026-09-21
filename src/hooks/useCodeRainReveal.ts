@@ -11,28 +11,60 @@ import { useEffect, useRef, type RefObject } from "react";
  */
 
 // Pointer influence on the mask.
-const CURSOR_SCALE = 4.6;
+const CURSOR_SCALE = 3.0;
 const CURSOR_INTENSITY = 0.15;
 // Noise field shape and drift.
-const SCALE = 1.15;
-const SPEED = 0.085;
+const SCALE = 2.4;
+const SPEED = 0.092;
 const DISTORT_SCALE = 1.0;
 const DISTORT_INTENSITY = 0.5;
-const DETAIL_SCALE = 2.2;
-const DETAIL_AMOUNT = 0.3;
+const DETAIL_SCALE = 2.9;
+// How much of the outline comes from the fine octave — the raggedness dial.
+// Lower is calmer: the coarse octave decides the shape and this only roughens
+// its edge. Below ~0.15 the edge goes smooth and small openings turn oval.
+const DETAIL_AMOUNT = 0.25;
 const NOISE_GAIN = 1 / Math.hypot(1 - DETAIL_AMOUNT, DETAIL_AMOUNT);
 // How fast the opening follows the pointer, and how it behaves when idle.
 const PACE_MIN = 0.35;
 const SPEED_FULL = 1.6;
 const SPEED_ATTACK = 0.3;
 const SPEED_DECAY = 0.92;
-const PACE_EASE = 0.14;
-const MOUSE_EASE = 0.34;
+const PACE_EASE = 0.12;
+const MOUSE_EASE = 0.18;
 const IDLE_DELAY_MS = 2500;
 const DRIFT_REACH = 0.34;
 const DRIFT_SPEED = 1.0;
+/** Faster where the wander is the whole effect and no hand is driving it. */
+const AMBIENT_DRIFT_SPEED = 1.35;
 const DRIFT_SETTLE = 0.985;
 const MAX_DPR = 1.5;
+
+/** The rain is painted to a 2D canvas before the shader masks it, so its
+ *  colours are chosen here rather than in CSS. Light is for the hero, dark for
+ *  anything laid over the page. */
+interface Palette {
+  /** Fills the panel the glyphs fall through. */
+  panel: string;
+  /** Painted over the panel each frame, which is what leaves the trails. */
+  trail: string;
+  glyph: (alpha: number) => string;
+  head: string;
+}
+
+const PALETTES: Record<"light" | "dark", Palette> = {
+  light: {
+    panel: "#FFFFFF",
+    trail: "rgba(255,255,255,0.22)",
+    glyph: (a) => `rgba(10,10,10,${a.toFixed(2)})`,
+    head: "#0A0A0A",
+  },
+  dark: {
+    panel: "#0A0A0A",
+    trail: "rgba(10,10,10,0.2)",
+    glyph: (a) => `rgba(200,255,61,${a.toFixed(2)})`,
+    head: "#DFFF7A",
+  },
+};
 
 const VERT = `#version 300 es
 in vec2 aPos;
@@ -114,17 +146,7 @@ void main() {
   float distort = 0.5 + snoise(vec3(nuv * DISTORT_SCALE, uTime * SPEED * 0.1)) * 0.5;
   float warp = infl * CURSOR_INTENSITY + distort * DISTORT_INTENSITY;
 
-  // domain warp: displace the sample point by a noise VECTOR, so the level set
-  // flows in different directions instead of settling into round blobs
-  vec2 wv = vec2(
-    snoise(vec3(nuv * 1.35 + 11.3, uTime * SPEED * 0.8)),
-    snoise(vec3(nuv * 1.35 - 7.1, uTime * SPEED * 0.8 + 3.3))
-  );
-  // slow rotation + anisotropic stretch: shapes elongate and shear as they move
-  float ra = uTime * SPEED * 0.55;
-  mat2 rot = mat2(cos(ra), -sin(ra), sin(ra), cos(ra));
-  vec2 flow = rot * ((nuv + warp + wv * 0.42) * vec2(1.0, 0.62));
-  vec3 q = vec3(flow * SCALE, uTime * SPEED);
+  vec3 q = vec3((nuv + warp) * SCALE, uTime * SPEED);
   float fv = snoise(q) * ${(1 - DETAIL_AMOUNT).toFixed(3)}
            + snoise(q * vec3(${DETAIL_SCALE.toFixed(2)}, ${DETAIL_SCALE.toFixed(2)}, 1.6)) * ${DETAIL_AMOUNT.toFixed(3)};
   float n = clamp(0.5 + fv * 0.5 * ${NOISE_GAIN.toFixed(4)}, 0.0, 1.0);
@@ -156,11 +178,30 @@ interface Column {
   word: string | null;
 }
 
-export function useCodeRainReveal(containerRef: RefObject<HTMLElement | null>) {
+interface Options {
+  palette?: "light" | "dark";
+  /** Force running without a pointer: the opening drifts from the first frame
+   *  and stays open. Any surface on a device with no hover does this anyway. */
+  ambient?: boolean;
+}
+
+/** How far open the mask sits in ambient mode. */
+const AMBIENT_PACE = 0.92;
+
+export function useCodeRainReveal(
+  containerRef: RefObject<HTMLElement | null>,
+  { palette = "light", ambient = false }: Options = {},
+) {
+  const tone = PALETTES[palette];
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const ringRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
+    // No hover means no pointer to follow, so the wander is the whole effect —
+    // and waiting IDLE_DELAY_MS before it starts leaves a phone looking at a
+    // still hero for the first two and a half seconds.
+    const drifts = ambient || window.matchMedia?.("(hover: none)").matches === true;
+
     const cv = canvasRef.current;
     const hero = containerRef.current;
     if (!cv || !hero) return;
@@ -271,14 +312,14 @@ export function useCodeRainReveal(containerRef: RefObject<HTMLElement | null>) {
         });
       }
       rctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      rctx.fillStyle = "#FFFFFF";
+      rctx.fillStyle = tone.panel;
       rctx.fillRect(0, 0, W, H);
     };
 
     const drawRain = () => {
       if (rain.width !== Math.round(W * dpr) || !cols.length) layoutRain();
       rctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      rctx.fillStyle = "rgba(255,255,255,0.22)";
+      rctx.fillStyle = tone.trail;
       rctx.fillRect(0, 0, W, H);
       rctx.font = `500 ${fontPx.toFixed(1)}px 'JetBrains Mono', monospace`;
       rctx.textBaseline = "top";
@@ -302,13 +343,13 @@ export function useCodeRainReveal(containerRef: RefObject<HTMLElement | null>) {
               c.word && k < c.word.length ? c.word[c.word.length - 1 - k] : pick(GLYPHS.split(""));
           }
           const fade = 1 - k / c.len;
-          if (k === 0) rctx.fillStyle = "#0A0A0A";
-          else if (k < 3) rctx.fillStyle = `rgba(10,10,10,${(0.85 * fade).toFixed(2)})`;
-          else rctx.fillStyle = `rgba(10,10,10,${(0.55 * fade * fade + 0.04).toFixed(2)})`;
+          if (k === 0) rctx.fillStyle = tone.head;
+          else if (k < 3) rctx.fillStyle = tone.glyph(0.85 * fade);
+          else rctx.fillStyle = tone.glyph(0.55 * fade * fade + 0.04);
           rctx.fillText(c.chars[row], x, y);
         }
         if (head * cellH > -cellH && head * cellH < H) {
-          rctx.fillStyle = "rgba(10,10,10,0.55)";
+          rctx.fillStyle = tone.glyph(0.55);
           rctx.fillRect(x, head * cellH + cellH * 0.92, cellW * 0.66, Math.max(1, fontPx * 0.07));
         }
       }
@@ -333,7 +374,7 @@ export function useCodeRainReveal(containerRef: RefObject<HTMLElement | null>) {
     let spd = 0, pace = 0;
     let hovering = false;
     let last: { x: number; y: number; t: number } | null = null;
-    let lastActivity = performance.now();
+    let lastActivity = drifts ? -Infinity : performance.now();
     let drifting = false;
     let driftStart = 0;
     let dox = 0, doy = 0;
@@ -372,7 +413,7 @@ export function useCodeRainReveal(containerRef: RefObject<HTMLElement | null>) {
       }
       last = { x: ev.clientX, y: ev.clientY, t: now };
     };
-    window.addEventListener("pointermove", onMove, { passive: true });
+    if (!drifts) window.addEventListener("pointermove", onMove, { passive: true });
 
     let raf = 0;
     let painted = false;
@@ -393,7 +434,7 @@ export function useCodeRainReveal(containerRef: RefObject<HTMLElement | null>) {
           dox = mx - p0.x * W;
           doy = my - p0.y * H;
         }
-        const p = driftAt(((now - driftStart) / 1000) * DRIFT_SPEED);
+        const p = driftAt(((now - driftStart) / 1000) * (drifts ? AMBIENT_DRIFT_SPEED : DRIFT_SPEED));
         dox *= DRIFT_SETTLE;
         doy *= DRIFT_SETTLE;
         const nx2 = p.x * W + dox;
@@ -408,7 +449,11 @@ export function useCodeRainReveal(containerRef: RefObject<HTMLElement | null>) {
       }
 
       const norm = Math.min(spd / SPEED_FULL, 1);
-      const paceTarget = hovering || drifting ? PACE_MIN + (1 - PACE_MIN) * norm : 0;
+      const paceTarget = drifts
+        ? Math.max(AMBIENT_PACE, PACE_MIN + (1 - PACE_MIN) * norm)
+        : hovering || drifting
+          ? PACE_MIN + (1 - PACE_MIN) * norm
+          : 0;
       pace += (paceTarget - pace) * PACE_EASE;
       mx += (tx - mx) * MOUSE_EASE;
       my += (ty - my) * MOUSE_EASE;
@@ -456,7 +501,7 @@ export function useCodeRainReveal(containerRef: RefObject<HTMLElement | null>) {
       gl.deleteShader(vs);
       gl.deleteShader(fs);
     };
-  }, [containerRef]);
+  }, [containerRef, tone, ambient]);
 
   return { canvasRef, ringRef };
 }

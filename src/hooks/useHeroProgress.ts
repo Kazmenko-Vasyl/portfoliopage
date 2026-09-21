@@ -1,17 +1,22 @@
 import { useEffect, useRef, useState } from "react";
 
-/** Where the name has finished fading out. */
-const NAME_OUT = 0.1;
+/** The stretch the name breaks apart over, and where its tagline goes.
+ *  Deliberately long: people flick rather than inch down a page, and over a
+ *  short run the whole thing can happen between two frames of a single flick
+ *  and never be seen at all. */
+const BREAK_FROM = 0.02;
+const BREAK_SPAN = 0.42;
+const TAGLINE_OUT = 0.14;
 
 /** The stretch the lights go down over. Long on purpose: packed into a shorter
  *  run, one flick of a trackpad covers the whole fade in a single frame and it
  *  reads as a flash rather than a fade. */
 const DARK_FROM = 0.05;
-const DARK_SPAN = 0.37;
+const DARK_SPAN = 0.4;
 
 /** The stretch the line is written over. */
-const TYPE_FROM = 0.4;
-const TYPE_SPAN = 0.45;
+const TYPE_FROM = 0.47;
+const TYPE_SPAN = 0.43;
 
 /** Hysteresis on the header's light/dark flip, so scrolling across the
  *  threshold cannot strobe it between the two colour schemes. */
@@ -65,7 +70,14 @@ export function useHeroProgress(charCount: number): HeroProgress {
 
       const dark = smoothstep(clamp01((p - DARK_FROM) / DARK_SPAN));
       hero.style.setProperty("--hero-veil", (dark * 0.94).toFixed(3));
-      hero.style.setProperty("--hero-name", (1 - smoothstep(clamp01(p / NAME_OUT))).toFixed(3));
+      hero.style.setProperty(
+        "--hero-break",
+        smoothstep(clamp01((p - BREAK_FROM) / BREAK_SPAN)).toFixed(4),
+      );
+      hero.style.setProperty(
+        "--hero-tagline",
+        (1 - smoothstep(clamp01(p / TAGLINE_OUT))).toFixed(3),
+      );
       hero.style.setProperty("--hero-aside", (1 - clamp01(p / 0.3)).toFixed(3));
 
       setWritten(Math.round(clamp01((p - TYPE_FROM) / TYPE_SPAN) * charCount));
