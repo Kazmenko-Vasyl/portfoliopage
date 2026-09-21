@@ -477,7 +477,10 @@ export function useCodeRainReveal(
       }
     };
 
+    let onScreen = true;
+
     const frame = (now: number) => {
+      raf = 0;
       try {
         tick(now);
       } catch (err) {
@@ -486,13 +489,36 @@ export function useCodeRainReveal(
           painted = true;
         }
       } finally {
-        raf = requestAnimationFrame(frame);
+        if (onScreen) raf = requestAnimationFrame(frame);
       }
     };
+
+    // Every frame costs a rain repaint, a texture upload and three simplex
+    // lookups per pixel. Left running, that carries on for the whole page —
+    // the hero is thousands of pixels above the fold by the time anyone reaches
+    // the footer, and none of it can be seen.
+    const watcher = new IntersectionObserver(
+      ([entry]) => {
+        onScreen = entry.isIntersecting;
+        if (!onScreen) {
+          if (raf) cancelAnimationFrame(raf);
+          raf = 0;
+          return;
+        }
+        // Resuming after a gap would otherwise report it as one enormous frame
+        // and spike the speed the pace is derived from.
+        lastFrame = null;
+        if (!raf) raf = requestAnimationFrame(frame);
+      },
+      { threshold: 0 },
+    );
+    watcher.observe(hero);
+
     raf = requestAnimationFrame(frame);
 
     return () => {
       cancelAnimationFrame(raf);
+      watcher.disconnect();
       window.removeEventListener("resize", resize);
       window.removeEventListener("pointermove", onMove);
       gl.deleteTexture(tex);

@@ -24,7 +24,12 @@ export function CapabilityPanel({ capability, onClose }: Props) {
             <span className="capability-panel__index">{index}</span>
             <span className="capability-panel__name">{title}</span>
           </div>
-          <button type="button" className="capability-panel__close" onClick={onClose}>
+          <button
+            type="button"
+            className="capability-panel__close"
+            aria-label="Close"
+            onClick={onClose}
+          >
             esc
           </button>
         </div>

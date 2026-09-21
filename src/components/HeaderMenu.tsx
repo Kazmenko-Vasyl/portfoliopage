@@ -22,7 +22,7 @@ export function HeaderMenu({ links, onNavigate }: Props) {
 
   return (
     <div id="header-menu" className="header__menu" ref={ref}>
-      <canvas ref={canvasRef} className="header__menu-rain" />
+      <canvas ref={canvasRef} className="header__menu-rain" aria-hidden="true" />
 
       <nav className="header__menu-links">
         {links.map((link, i) => (

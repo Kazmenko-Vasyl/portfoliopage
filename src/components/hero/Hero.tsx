@@ -31,7 +31,7 @@ export function Hero() {
         <img className="hero__backdrop" src={HERO_BACKDROP} alt="" aria-hidden="true" />
         <div className="hero__scrim" />
 
-        <canvas ref={canvasRef} className="hero__rain" />
+        <canvas ref={canvasRef} className="hero__rain" aria-hidden="true" />
 
         <div className="hero__veil" />
 

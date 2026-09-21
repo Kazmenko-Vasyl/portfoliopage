@@ -1,19 +1,7 @@
+import "./ScrollProgressBar.css";
 import { useScrollProgress } from "../hooks/useScrollProgress";
 
+/** The hairline at the top of the page showing how far down you are. */
 export function ScrollProgressBar() {
-  const ref = useScrollProgress();
-  return (
-    <div
-      ref={ref}
-      style={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        height: 2,
-        width: "0%",
-        background: "var(--accent)",
-        zIndex: 60,
-      }}
-    />
-  );
+  return <div ref={useScrollProgress()} className="scroll-progress" aria-hidden="true" />;
 }
