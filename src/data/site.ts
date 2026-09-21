@@ -3,7 +3,7 @@ export const NAME = "Vasyl Kazmenko";
  *  the site, so the two have to match exactly. */
 export const BUSINESS = "Kazmenko Web Development";
 /** Where the business profile says it works. */
-export const AREA = "Philadelphia, PA";
+export const AREA = "Feasterville-Trevose, PA";
 export const ROLE = "software developer @ fiserv";
 export const TAGLINE = "I design and build websites that look sharp and work hard.";
 
